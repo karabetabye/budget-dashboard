@@ -1,14 +1,65 @@
-
 <!DOCTYPE html>
 <html dir="rtl" lang="he">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>דשבורד תקציב מקצועי</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>דשבורד תקציב מקצועי</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+      color: #fff;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #60a5fa;
+    }
+    canvas {
+      max-width: 700px;
+      margin: 40px auto;
+    }
+  </style>
 </head>
 <body>
-    <h1>דשבורד תקציב מקצועי</h1>
-    <p>כאן יוצגו הגרפים והנתונים שלך</p>
+  <h1>דשבורד תקציב מקצועי</h1>
+  <canvas id="chart"></canvas>
+  <script>
+    const ctx = document.getElementById('chart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני'],
+        datasets: [{
+          label: 'תקציב חודשי',
+          data: [3000, 4200, 3200, 5100, 3900, 4700],
+          backgroundColor: 'rgba(102, 126, 234, 0.7)',
+          borderColor: 'rgba(102, 126, 234, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#fff' },
+            grid: { color: 'rgba(255,255,255,0.1)' }
+          },
+          x: {
+            ticks: { color: '#fff' },
+            grid: { color: 'rgba(255,255,255,0.1)' }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: { color: '#fff' }
+          }
+        }
+      }
+    });
+  </script>
 </body>
 </html>
