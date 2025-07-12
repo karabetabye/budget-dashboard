@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>דשבורד תקציב מקצועי</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            font-weight: 300;
+        }
+        
+        .year-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .year-btn {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .year-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .year-btn.active {
+            background: linear-gradient(45deg, #ff6b6b 0%, #ee5a24 100%);
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+            border-radius: 22px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #a0a0a0;
+            font-weight: 500;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+        
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #fff;
+        }
+        
+        .comparison-section {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .comparison-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #fff;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .comparison-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .comparison-item:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .comparison-category {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .comparison-values {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .comparison-value {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .positive {
+            color: #4ecdc4;
+        }
+        
+        .negative {
+            color: #ff6b6b;
+        }
+        
+        .change-indicator {
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .change-positive {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+        }
+        
+        .change-negative {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+        
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .year-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(102, 126, 234, 0.6);
+            border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>דשבורד תקציב מקצועי</h1>
+            <p>ניתוח מתקדם של נתוני התקציב 2023-2025</p>
+        </div>
+        
+        <div class="year-selector">
+            <button class="year-btn active" onclick="selectYear(2023)">2023</button>
+            <button class="year-btn" onclick="selectYear(2024)">2024</button>
+            <button class="year-btn" onclick="selectYear(2025)">2025</button>
+        </div>
+        
+        <div class="stats-grid" id="statsGrid">
+            <!-- סטטיסטיקות יתווספו כאן -->
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">התפלגות לפי קטגוריות</h3>
+                <canvas id="categoryChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">מגמות חודשיות</h3>
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="comparison-section">
+            <h3 class="comparison-title">השוואה בין שנים</h3>
+            <div class="comparison-grid" id="comparisonGrid">
+                <!-- השוואות יתווספו כאן -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // נתונים
+        const budgetData = {
+            2023: {
+                total: 58161,
+                categories: {
+                    "הכנסות": 62392,
+                    "הוצאות": 4231,
+                    "תכנונות": 17988
+                },
+                monthly: {
+                    "ינו": 9611,
+                    "פבר": 3083,
+                    "מרץ": 3083,
+                    "אפר": 3083,
+                    "מאי": 3083,
+                    "יונ": 3083,
+                    "יול": 2573,
+                    "אוג": 10475,
+                    "ספט": 10610,
+                    "אוק": 10588,
+                    "נוב": 10565,
+                    "דצמ": 10000
+                }
+            },
+            2024: {
+                total: 118518,
+                categories: {
+                    "הכנסות": 134868,
+                    "הוצאות": 16350,
+                    "תכנונות": 36934
+                },
+                monthly: {
+                    "ינו": 11269,
+                    "פבר": 15865,
+                    "מרץ": 10783,
+                    "אפר": 10947,
+                    "מאי": 10628,
+                    "יונ": 10695,
+                    "יול": 10748,
+                    "אוג": 10896,
+                    "ספט": 11040,
+                    "אוק": 10639,
+                    "נוב": 10626,
+                    "דצמ": 10732
+                }
+            },
+            2025: {
+                total: 131012,
+                categories: {
+                    "הכנסות": 151300,
+                    "הוצאות": 20288,
+                    "תכנונות": 42528
+                },
+                monthly: {
+                    "ינו": 10876,
+                    "פבר": 17484,
+                    "מרץ": 12281,
+                    "אפר": 12530,
+                    "מאי": 12148,
+                    "יונ": 12283,
+                    "יול": 12283,
+                    "אוג": 12283,
+                    "ספט": 12283,
+                    "אוק": 12283,
+                    "נוב": 12283,
+                    "דצמ": 12283
+                }
+            }
+        };
+        
+        let currentYear = 2023;
+        let categoryChart, monthlyChart;
+        
+        // יצירת חלקיקים צפים
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // פונקציה לבחירת שנה
+        function selectYear(year) {
+            currentYear = year;
+            
+            // עדכון כפתורי השנה
+            document.querySelectorAll('.year-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            updateDashboard();
+        }
+        
+        // עדכון הדשבורד
+        function updateDashboard() {
+            updateStats();
+            updateCharts();
+            updateComparison();
+        }
+        
+        // עדכון הסטטיסטיקות
+        function updateStats() {
+            const data = budgetData[currentYear];
+            const statsGrid = document.getElementById('statsGrid');
+            
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${data.total.toLocaleString()}</div>
+                    <div class="stat-label">סה"כ תקציב</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${data.categories['הכנסות'].toLocaleString()}</div>
+                    <div class="stat-label">סה"כ הכנסות</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${data.categories['הוצאות'].toLocaleString()}</div>
+                    <div class="stat-label">סה"כ הוצאות</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${data.categories['תכנונות'].toLocaleString()}</div>
+                    <div class="stat-label">סה"כ תכנונות</div>
+                </div>
+            `;
+        }
+        
+        // עדכון התרשימים
+        function updateCharts() {
+            const data = budgetData[currentYear];
+            
+            // תרשים קטגוריות
+            if (categoryChart) {
+                categoryChart.destroy();
+            }
+            
+            const ctx1 = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(data.categories),
+                    datasets: [{
+                        data: Object.values(data.categories),
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(255, 107, 107, 0.8)',
+                            'rgba(78, 205, 196, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(102, 126, 234, 1)',
+                            'rgba(255, 107, 107, 1)',
+                            'rgba(78, 205, 196, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#fff',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+            
+            // תרשים חודשי
+            if (monthlyChart) {
+                monthlyChart.destroy();
+            }
+            
+            const ctx2 = document.getElementById('monthlyChart').getContext('2d');
+            monthlyChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(data.monthly),
+                    datasets: [{
+                        label: 'תקציב חודשי',
+                        data: Object.values(data.monthly),
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#fff'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#fff'
+                            }
+                        }
+                    },
+                    animation: {
+                        tension: {
+                            duration: 1000,
+                            easing: 'linear',
+                            from: 1,
+                            to: 0,
+                            loop: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // עדכון השוואות
+        function updateComparison() {
+            const comparisonGrid = document.getElementById('comparisonGrid');
+            const years = Object.keys(budgetData);
+            
+            let html = '';
+            
+            // השוואה בין שנים
+            for (let i = 0; i < years.length - 1; i++) {
+                const year1 = years[i];
+                const year2 = years[i + 1];
+                const data1 = budgetData[year1];
+                const data2 = budgetData[year2];
+                
+                const totalChange = ((data2.total - data1.total) / data1.total * 100).toFixed(1);
+                const isPositive = totalChange > 0;
+                
+                html += `
+                    <div class="comparison-item">
+                        <div class="comparison-category">${year1} vs ${year2}</div>
+                        <div class="comparison-values">
+                            <span class="comparison-value">${data1.total.toLocaleString()}</span>
+                            <span class="comparison-value">${data2.total.toLocaleString()}</span>
+                        </div>
+                        <span class="change-indicator ${isPositive ? 'change-positive' : 'change-negative'}">
+                            ${isPositive ? '+' : ''}${totalChange}%
+                        </span>
+                    </div>
+                `;
+            }
+            
+            comparisonGrid.innerHTML = html;
+        }
+        
+        // אתחול הדשבורד
+        function initDashboard() {
+            createParticles();
+            updateDashboard();
+        }
+        
+        // הפעלת הדשבורד
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>
